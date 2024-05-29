@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { RFValue } from "react-native-responsive-fontsize";
 import { TextInput } from 'react-native-gesture-handler';
 
 
-const Exercise = ({index, deleteExercise}) => {
+const Exercise = ({index, name, deleteExercise}) => {
 
   // Functions
   const onDelete = () => {
@@ -14,10 +14,7 @@ const Exercise = ({index, deleteExercise}) => {
   return (
     <View style={styles.outer}>
       <View style={styles.header}>
-        <TextInput 
-          style={styles.exerciseName}
-          placeholder='Exercise name'
-        />
+        <Text style={styles.exerciseName}>{name}</Text>
         <TouchableOpacity onPress={onDelete}>        
           <Text style={styles.deleteButton}>delete</Text>
         </TouchableOpacity>
