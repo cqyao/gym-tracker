@@ -1,20 +1,13 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native'
 import CheckBox from 'expo-checkbox';
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { RFValue } from "react-native-responsive-fontsize";
 import Exercise from '../../Components/Exercise';
 import Modal from "react-native-modal";
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-
-const exercisesData = [
-  { id: 1, name: 'Bench Press', type: 'Barbell' },
-  { id: 2, name: 'Hack Squat', type: 'Machine' },
-  { id: 3, name: 'Preacher Curl', type: 'Barbell' },
-  { id: 4, name: 'Reverse Pec Fly', type: 'Machine' },
-  { id: 5, name: 'Standing Calf Raise', type: 'Machine' },
-];
+import { getExercises, addExercise } from '../../supabase';
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -26,12 +19,23 @@ const exercisesCategory = [
 ]
 
 const EditWorkout = () => {
+  const [exercisesData, setExercisesData] = useState([]);
   const [exerciseList, setExerciseList] = useState([]);
   const [selectedExercises, setSelectedExercises] = useState({});
   const [isAddExerciseModalVisible, setIsAddExerciseModalVisible] = useState(false);
   const [isAddCustomModalVisible, setIsAddCustomModalVisible] = useState(false);
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
+
+  const getExerciseList = async() => {
+    const exerciseList = await getExercises();
+    setExercisesData(exerciseList);
+    console.log(exercisesData)
+  }
+  
+  useEffect(() => {
+    getExerciseList();
+  }, []);
 
   const [customExercise, setCustomExercise] = useState("");
 
@@ -71,21 +75,15 @@ const EditWorkout = () => {
       }, 400);
     }
   }
-
-  const addExercise = event => {
-    setExerciseList([...exerciseList, { key: exerciseList.length }])
-  };
   const deleteExercise = (index) => {
     setExerciseList(exerciseList.filter((_, idx) => idx !== index));
-  };
-  const addCustom = () => {
-
   };
   const saveWorkout = () => {
     console.log(customExercise)
   };
   const saveCustomExercise = () => {
-    exercisesData.push({ id: 10, name: customExercise, type: value })
+    addExercise(customExercise, value);
+    getExerciseList();
   };
 
   return (
@@ -121,7 +119,7 @@ const EditWorkout = () => {
                     value={selectedExercises[item.id] || false}
                     onValueChange={() => toggleExerciseSelection(item.id)}
                   />
-                  <Text>{item.name}{"\n"}({item.type})</Text>
+                  <Text>{item.exercise_name}{"\n"}({item.type})</Text>
                 </View>
               )}
             />
@@ -149,10 +147,11 @@ const EditWorkout = () => {
               </TouchableOpacity>
             </View>
             <TextInput
-            style={styles.exerciseName}
-            placeholder='Exercise name'
-            onChangeText={setCustomExercise}
-            value={customExercise}
+              style={styles.exerciseName}
+              placeholder='Exercise name'
+              onChangeText={setCustomExercise}
+              value={customExercise}
+              autoCapitalize='words'
             />
             <View style={{flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
               <Text style={styles.category}>Category</Text>
