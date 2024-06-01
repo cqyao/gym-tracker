@@ -3,11 +3,11 @@ import CheckBox from 'expo-checkbox';
 import React, { useState, useEffect } from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import { RFValue } from "react-native-responsive-fontsize";
-import Exercise from '../../Components/Exercise';
+import EditExercise from '../../Components/EditExercise';
 import Modal from "react-native-modal";
 import { AntDesign, Entypo } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-import { getExercises, addExercise } from '../../supabase';
+import { getExercises, addExercise, addWorkout } from '../../supabase';
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -18,26 +18,26 @@ const exercisesCategory = [
   { label: 'Cardio', value: '6' }
 ]
 
-const EditWorkout = () => {
-  const [exercisesData, setExercisesData] = useState([]);
-  const [exerciseList, setExerciseList] = useState([]);
+const EditWorkout = ({ navigation }) => {
+  const [workoutName, setWorkoutName] = useState("");
+  const [exercisesData, setExercisesData] = useState([]); 
+  const [exerciseList, setExerciseList] = useState([]); // The list of exercises that are in the workout
   const [selectedExercises, setSelectedExercises] = useState({});
   const [isAddExerciseModalVisible, setIsAddExerciseModalVisible] = useState(false);
   const [isAddCustomModalVisible, setIsAddCustomModalVisible] = useState(false);
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
+  const [customExercise, setCustomExercise] = useState("");
 
   const getExerciseList = async() => {
     const exerciseList = await getExercises();
     setExercisesData(exerciseList);
-    console.log(exercisesData)
   }
   
   useEffect(() => {
     getExerciseList();
-  }, []);
+  },[]);
 
-  const [customExercise, setCustomExercise] = useState("");
 
   const handleAddExerciseModal = () => setIsAddExerciseModalVisible(() => !isAddExerciseModalVisible);
   const handleAddCustomModal = () => setIsAddCustomModalVisible(() => !isAddCustomModalVisible);
@@ -78,11 +78,13 @@ const EditWorkout = () => {
   const deleteExercise = (index) => {
     setExerciseList(exerciseList.filter((_, idx) => idx !== index));
   };
-  const saveWorkout = () => {
-    console.log(customExercise)
+  const saveWorkout = async() => {
+    await addWorkout(workoutName, exerciseList)
+    navigation.navigate("Dashboard");
   };
-  const saveCustomExercise = () => {
-    addExercise(customExercise, value);
+  const saveCustomExercise = async() => {
+    // Required to return the promise or else may not render in the list
+    await addExercise(customExercise, value);
     getExerciseList();
   };
 
@@ -91,10 +93,12 @@ const EditWorkout = () => {
       <TextInput 
         style={styles.workoutNameHeader} 
         placeholder='Name'
+        value={workoutName}
+        onChangeText={setWorkoutName}
       />
-      <ScrollView>
+      <ScrollView style={styles.exerciseView}>
         {exerciseList.map((exercise, index) => (
-          <Exercise key={exercise.key} index={index} name={exercise.name} deleteExercise={deleteExercise} />
+          <EditExercise key={exercise.key} index={index} name={exercise.exercise_name} deleteExercise={deleteExercise} />
         ))}
       </ScrollView>
       <View style={styles.buttonsView}>
@@ -108,21 +112,21 @@ const EditWorkout = () => {
             <TouchableOpacity style={styles.addCustomBtn} onPress={handleBoth}>
               <Text style={styles.addCustomBtnText}>Add custom</Text>
             </TouchableOpacity>
-            <FlatList
-              data={exercisesData}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <View style={styles.exerciseItem}>
-                  <CheckBox
-                    style={{margin: 15}}
-                    color={"black"}
-                    value={selectedExercises[item.id] || false}
-                    onValueChange={() => toggleExerciseSelection(item.id)}
-                  />
-                  <Text>{item.exercise_name}{"\n"}({item.type})</Text>
-                </View>
-              )}
-            />
+            <ScrollView>
+              {exercisesData.map((exercise) => {
+                return (
+                    <View style={styles.exerciseItem} key={exercise.id}>
+                      <CheckBox
+                        style={{margin: 15}}
+                        color={"black"}
+                        value={selectedExercises[exercise.id] || false}
+                        onValueChange={() => toggleExerciseSelection(exercise.id)}
+                      />
+                      <Text>{exercise.exercise_name}{"\n"}({exercise.type})</Text>
+                    </View>
+                )
+              })}
+            </ScrollView>         
             <TouchableOpacity style={styles.addSelectedBtn} onPress={addSelectedExercises}>
               <Text style={styles.addSelectedBtnText}>Add selected ({Object.keys(selectedExercises).filter((key) => selectedExercises[key]).length})</Text>
             </TouchableOpacity>
@@ -182,24 +186,25 @@ const EditWorkout = () => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 5,
+        flex: 1,
         paddingHorizontal: RFValue(30),
         paddingVertical: RFValue(70),
-        //backgroundColor: "blue",
     },
     workoutNameHeader: {
         fontFamily: "Inter_700Bold",
         fontSize: "30",
         marginLeft: 10,
     },
+    exerciseView: {
+      marginBottom: RFValue(70),
+    },
     buttonsView: {
-      flex: 1,
-      height: RFValue(50),
+      height: RFValue(100),
       width: "100%",
       alignItems: "center",
       alignSelf: "center",
       position: "absolute",
-      bottom: 90
+      bottom: 50
     },
     addBtn: {
       width: "60%",

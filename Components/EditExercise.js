@@ -1,33 +1,38 @@
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { RFValue } from "react-native-responsive-fontsize";
 import { TextInput } from 'react-native-gesture-handler';
 
 
-const Exercise = ({name, currentPR}) => {
+const Exercise = ({index, name, deleteExercise}) => {
 
   // Functions
-  
+  const onDelete = () => {
+    deleteExercise(index);
+  }
 
   return (
     <View style={styles.outer}>
       <View style={styles.header}>
         <Text style={styles.exerciseName}>{name}</Text>
+        <TouchableOpacity onPress={onDelete}>        
+          <Text style={styles.deleteButton}>delete</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.container}>
         <View style={styles.detailsHeaderView}>
           <Text style={styles.detailsHeader}>Set</Text>
           <Text style={styles.detailsHeader}>Weight</Text>
           <Text style={styles.detailsHeader}>Reps</Text>
-          <Text style={styles.detailsHeader}>Current PR</Text>
+          <Text style={styles.detailsHeader}>Previous</Text>
         </View>
         <View style={styles.inputView}>
           <TextInput style={styles.setInput}/>
           <TextInput style={styles.weightInput}/>
           <TextInput style={styles.repInput}/>
-          <Text style={styles.prInput}>{currentPR}</Text>
+          <Text style={styles.prInput}>12kg x 3</Text>
         </View>
-      </View>
+        </View>
     </View>
   )
 }

@@ -6,6 +6,8 @@ import React from 'react'
 import { useFonts } from "expo-font";
 
 import EditWorkout from './assets/screens/EditWorkout';
+import Dashboard from './assets/screens/Dashboard';
+import Workout from './assets/screens/Workout'
 
 const Stack = createStackNavigator();
 
@@ -26,16 +28,20 @@ const App = () => {
         }}
       >
         <Stack.Screen
-          name="Edit Workout"
+          name="Dashboard"
+          component={Dashboard}
+        />
+        <Stack.Screen
+          name="EditWorkout"
           component={EditWorkout}
+        />
+        <Stack.Screen
+          name="Workout"
+          component={Workout}
         />
       </Stack.Navigator>
     </NavigationContainer>
   )
-}
-
-const styles = StyleSheet.create({
-
-})
+};
 
 export default App
