@@ -1,0 +1,119 @@
+import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native'
+import React from 'react'
+import { RFValue } from "react-native-responsive-fontsize";
+
+
+const EditExercise = ({index, name, deleteExercise}) => {
+
+  // Functions
+  const onDelete = () => {
+    deleteExercise(index);
+  }
+
+  return (
+    <View style={styles.outer}>
+      <View style={styles.header}>
+        <Text style={styles.exerciseName}>{name}</Text>
+        <TouchableOpacity onPress={onDelete}>        
+          <Text style={styles.deleteButton}>delete</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.container}>
+        <View style={styles.detailsHeaderView}>
+          <Text style={styles.detailsHeader}>Set</Text>
+          <Text style={styles.detailsHeader}>Weight</Text>
+          <Text style={styles.detailsHeader}>Reps</Text>
+          <Text style={styles.detailsHeader}>Previous</Text>
+        </View>
+        <View style={styles.inputView}>
+          <TextInput style={styles.setInput}/>
+          <TextInput style={styles.weightInput}/>
+          <TextInput style={styles.repInput}/>
+          <Text style={styles.prInput}>12kg x 3</Text>
+        </View>
+        </View>
+    </View>
+  )
+}
+
+const styles = StyleSheet.create({
+    container: {
+        marginTop: 5,
+        alignSelf: "center",
+        borderRadius: 10,
+        backgroundColor: "white",
+        height: RFValue(110),
+        width: "98%",
+        padding: RFValue(10),
+        shadowColor: 'grey',
+        shadowOffset: { width: 2, height: 5 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1,  
+        // For Android phones
+        elevation: 5
+    },
+    outer: {
+        marginTop: 10,
+        overflow: 'hidden',
+        paddingBottom: 20,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
+    deleteButton: {
+      marginRight: 10,
+      color: "red",
+      marginTop: 5,
+    },
+    exerciseName: {
+      marginLeft: 10,
+      fontFamily: "Inter_500Medium",
+      fontSize: "18",
+    },
+    detailsHeaderView: {
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    inputView: {
+      marginTop: 7,
+      flexDirection: "row",
+      justifyContent: "space-between"
+    },
+    detailsHeader: {
+      fontFamily: "Inter_700Bold"
+    },
+    setInput: {
+      width: RFValue(20),
+      height: RFValue(25),
+      backgroundColor: "#ECECEC",
+      borderRadius: 5,
+      padding: 5,
+    },
+    weightInput: {
+      width: RFValue(45),
+      height: RFValue(25),
+      backgroundColor: "#ECECEC",
+      borderRadius: 5,
+      padding: 5,
+    },
+    repInput: {
+      width: RFValue(28),
+      height: RFValue(25),
+      backgroundColor: "#ECECEC",
+      borderRadius: 5,
+      padding: 5,
+    },
+    prInput: {
+      fontFamily: "Inter_500Medium",
+      fontSize: RFValue(13),
+      width: RFValue(68),
+      height: RFValue(25),
+      backgroundColor: "#ECECEC",
+      borderRadius: 5,
+      padding: 5,
+    }
+
+});
+
+export default EditExercise
