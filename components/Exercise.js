@@ -1,12 +1,34 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, TextInput } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { RFValue } from "react-native-responsive-fontsize";
 
+const Exercise = ({ index, name, pr, onExerciseUpdate }) => {
+  const [sets, setSets] = useState(["", "", ""]);
+  const [weights, setWeights] = useState(["", "", ""]);
+  const [reps, setReps] = useState(["", "", ""]);
 
-const Exercise = ({index, name}) => {
+  useEffect(() => {
+    const exerciseData = { index, name, sets, weights, reps };
+    onExerciseUpdate(exerciseData);
+  }, [sets, weights, reps]);
 
-  // Functions
-  
+  const handleSetChange = (text, idx) => {
+    const newSets = [...sets];
+    newSets[idx] = text;
+    setSets(newSets);
+  };
+
+  const handleWeightChange = (text, idx) => {
+    const newWeights = [...weights];
+    newWeights[idx] = text;
+    setWeights(newWeights);
+  };
+
+  const handleRepChange = (text, idx) => {
+    const newReps = [...reps];
+    newReps[idx] = text;
+    setReps(newReps);
+  };
 
   return (
     <View style={styles.outer}>
@@ -14,32 +36,53 @@ const Exercise = ({index, name}) => {
       <View style={styles.container}>
         <View style={styles.setColumn}>
           <Text style={styles.detailsHeader}>Set</Text>
-          <TextInput style={styles.setInput} inputMode={"numeric"} maxLength={2}/>
-          <TextInput style={styles.setInput} />
-          <TextInput style={styles.setInput} />
+          {sets.map((value, idx) => (
+            <TextInput
+              key={idx}
+              style={styles.setInput}
+              inputMode={"numeric"}
+              maxLength={2}
+              value={value}
+              onChangeText={(text) => handleSetChange(text, idx)}
+            />
+          ))}
         </View>
         <View style={styles.setColumn}>
           <Text style={styles.detailsHeader}>Weight</Text>
-          <TextInput style={styles.weightInput} maxLength={3} inputMode={"numeric"}/>
-          <TextInput style={styles.weightInput} />
-          <TextInput style={styles.weightInput} />
+          {weights.map((value, idx) => (
+            <TextInput
+              key={idx}
+              style={styles.weightInput}
+              maxLength={3}
+              inputMode={"numeric"}
+              value={value}
+              onChangeText={(text) => handleWeightChange(text, idx)}
+            />
+          ))}
         </View>
         <View style={styles.setColumn}>
           <Text style={styles.detailsHeader}>Reps</Text>
-          <TextInput style={styles.repInput} maxLength={2} inputMode={"numeric"}/>
-          <TextInput style={styles.repInput} />
-          <TextInput style={styles.repInput} />
+          {reps.map((value, idx) => (
+            <TextInput
+              key={idx}
+              style={styles.repInput}
+              maxLength={2}
+              inputMode={"numeric"}
+              value={value}
+              onChangeText={(text) => handleRepChange(text, idx)}
+            />
+          ))}
         </View>
         <View style={styles.setColumn}>
           <Text style={styles.detailsHeader}>Previous</Text>
-          <TextInput style={styles.prInput} editable={false}/>
-          <TextInput style={styles.prInput} editable={false}/>
-          <TextInput style={styles.prInput} editable={false}/>
+          <Text style={styles.prInput}>{pr}</Text>
+          <Text style={styles.prInput}>{pr}</Text>
+          <Text style={styles.prInput}>{pr}</Text>
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -100,6 +143,8 @@ const styles = StyleSheet.create({
       borderRadius: 5,
       padding: 5,
       textAlign: "center",
+      fontWeight: "900",
+      color: "orange",
     },
     weightInput: {
       width: RFValue(55),
@@ -129,6 +174,7 @@ const styles = StyleSheet.create({
       borderRadius: 5,
       padding: 5,
       textAlign: "center",
+      color: "grey"
     }, 
     setColumn: {
       flexDirection: "column",

@@ -23,6 +23,7 @@ const QuickStart = ({workout}) => {
       pathname: "./workout",
       params: {
         workoutName: workout.workout_name, 
+        workoutId: workout.id,
         exerciseList: JSON.stringify(workout.exercise_list)
       }
     })
