@@ -1,12 +1,19 @@
 import { View, Text, StyleSheet, Pressable, TouchableOpacity, ScrollView } from 'react-native'
-import { Link } from 'expo-router'
+import { Link, SplashScreen } from 'expo-router'
 import { RFValue } from 'react-native-responsive-fontsize'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import QuickStart from '../components/QuickStart'
+import {  useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
 import { supabase } from '@/utils/supabase'
+
+SplashScreen.preventAutoHideAsync();
 
 const Dashboard = () => {
   const [workouts, setWorkouts] = useState([])
+  let [fontsLoaded] = useFonts({
+    Inter_700Bold, Inter_500Medium
+  });
+
   async function getWorkouts() {
     const { data, error } = await supabase
       .from('Workouts')
@@ -17,6 +24,21 @@ const Dashboard = () => {
   useEffect(() => {
     getWorkouts()
   }, [workouts]);
+
+  useEffect(() => {
+    async function onLayoutRootView() {
+      if (fontsLoaded) {
+        await SplashScreen.hideAsync();
+      }
+    }
+    onLayoutRootView();
+  }, [fontsLoaded])
+
+
+  if (!fontsLoaded) {
+    console.log("Fonts not loaded!");
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -35,7 +57,7 @@ const Dashboard = () => {
           )
         })}
       </ScrollView>
-      <Link href="./workout" asChild>
+      <Link href="./addworkout" asChild>
         <Pressable style={styles.addBtn}>
           <Text style={styles.addBtnText}>Add Workout</Text>
         </Pressable>

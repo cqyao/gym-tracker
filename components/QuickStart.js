@@ -4,16 +4,29 @@ import { RFValue } from 'react-native-responsive-fontsize'
 import { Ionicons } from '@expo/vector-icons';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import { differenceInDays } from 'date-fns';
-
-
-
+import { router } from 'expo-router';
+import { supabase } from '@/utils/supabase';
 
 const QuickStart = ({workout}) => {
   const currentDate = new Date();
   const [lastPerformed, setLastPerformed] = useState(null);
-
+  
+  async function updateDate() {
+    const { error } = await supabase
+      .from('Workouts')
+      .update({ last_performed: currentDate })
+      .eq('id', workout.id)
+    if (error) {console.log(error.message)}
+  }
   const startWorkout = () => {
-    //console.log(currentDate)
+    router.push({
+      pathname: "./workout",
+      params: {
+        workoutName: workout.workout_name, 
+        exerciseList: JSON.stringify(workout.exercise_list)
+      }
+    })
+    updateDate();
   };
 
   useEffect(() => {
