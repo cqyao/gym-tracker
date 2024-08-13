@@ -18,6 +18,7 @@ const exercisesCategory = [
   { label: 'Cardio', value: '6' }
 ]
 
+
 const AddWorkout = () => {
   const [workoutName, setWorkoutName] = useState("");
   const [exercisesData, setExercisesData] = useState([]); 
@@ -93,6 +94,7 @@ const AddWorkout = () => {
       Alert.alert("Workout name cannot be empty")
       return null;
     }
+    
     const { data, error } = await supabase
       .from('Workouts')
       .insert({
