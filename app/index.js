@@ -13,14 +13,15 @@ const Dashboard = () => {
   let [fontsLoaded] = useFonts({
     Inter_700Bold, Inter_500Medium
   });
+  
 
   async function getWorkouts() {
     const { data, error } = await supabase
       .from('Workouts')
       .select()
-
     setWorkouts(data)
   }
+  
   useEffect(() => {
     getWorkouts()
   }, [workouts]);
@@ -51,7 +52,7 @@ const Dashboard = () => {
       {/* Quick start workouts section */}
       <Text style={styles.sectionHeader}>Workouts</Text>
       <ScrollView style={{maxHeight: RFValue(180)}}>
-        {workouts.map((workout)=> {
+        {workouts && workouts.length > 0 && workouts.map((workout)=> {
           return (
             <QuickStart key={workout.id} workout={workout} />
           )

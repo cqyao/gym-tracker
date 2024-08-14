@@ -7,7 +7,10 @@ import Modal from "react-native-modal";
 import { AntDesign, Entypo, } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Link, router } from 'expo-router';
+import * as SQLite from 'expo-sqlite';
 import { supabase } from '../utils/supabase'
+
+
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -36,10 +39,11 @@ const AddWorkout = () => {
       .select()
     const exercises = data
     setExercisesData(exercises)
-    console.log("Exercises: ", data)
+    //console.log("Exercises: ", data)
 
     if (error) {console.log("Error getting exercise data: ", data.message)}
   }
+
   
   useEffect(() => {
     getExerciseList();
@@ -85,6 +89,7 @@ const AddWorkout = () => {
   const deleteExercise = (index) => {
     setExerciseList(exerciseList.filter((_, idx) => idx !== index));
   };
+
   async function saveWorkout() {
     if (exerciseList.length === 0) {
       Alert.alert("Exercise list cannot be empty")
@@ -94,7 +99,6 @@ const AddWorkout = () => {
       Alert.alert("Workout name cannot be empty")
       return null;
     }
-    
     const { data, error } = await supabase
       .from('Workouts')
       .insert({

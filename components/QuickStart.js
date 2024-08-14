@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { RFValue } from 'react-native-responsive-fontsize'
 import { Ionicons } from '@expo/vector-icons';
-import { SwipeListView } from 'react-native-swipe-list-view';
 import { differenceInDays } from 'date-fns';
 import { router } from 'expo-router';
 import { supabase } from '@/utils/supabase';
