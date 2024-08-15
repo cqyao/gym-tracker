@@ -6,6 +6,7 @@ export default function RootLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="addworkout" options={{ headerShown: false }} />
       <Stack.Screen name="workout" options={{ headerShown: false }} />
+      <Stack.Screen name="testDB" />
     </Stack>
   );
 }

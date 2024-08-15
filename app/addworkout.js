@@ -8,6 +8,7 @@ import { AntDesign, Entypo, } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Link, router } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../utils/supabase'
 
 
@@ -32,6 +33,8 @@ const AddWorkout = () => {
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [customExercise, setCustomExercise] = useState("");
+
+
 
   async function getExerciseList() {
     const { data, error } = await supabase
@@ -99,14 +102,22 @@ const AddWorkout = () => {
       Alert.alert("Workout name cannot be empty")
       return null;
     }
-    const { data, error } = await supabase
-      .from('Workouts')
-      .insert({
-        workout_name: workoutName,
-        exercise_list: exerciseList,
-      })
-      router.back()
+    const db = await SQLite.openDatabaseAsync('GymRite');
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS workouts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        workout_name TEXT NOT NULL,
+        exercise_list TEXT NOT NULL,
+        last_performed DATE 
+        );
+    `)
+    await db.runAsync(
+      'INSERT INTO workouts (workout_name, exercise_list) VALUES (?, ?)',
+      [workoutName, JSON.stringify(exerciseList)]
+    )
+    router.back()
   };
+
   async function saveCustomExercise() {
     const { error } = await supabase
       .from('Exercises')
@@ -117,7 +128,6 @@ const AddWorkout = () => {
     if (error) {console.log(error.message)}
     getExerciseList();
   }
-
   function goBack() {
     router.back()
   }

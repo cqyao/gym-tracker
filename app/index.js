@@ -4,6 +4,8 @@ import { RFValue } from 'react-native-responsive-fontsize'
 import React, { useCallback, useEffect, useState } from 'react'
 import QuickStart from '../components/QuickStart'
 import {  useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SQLite from 'expo-sqlite';
 import { supabase } from '@/utils/supabase'
 
 SplashScreen.preventAutoHideAsync();
@@ -16,15 +18,25 @@ const Dashboard = () => {
   
 
   async function getWorkouts() {
-    const { data, error } = await supabase
-      .from('Workouts')
-      .select()
-    setWorkouts(data)
+    const db = await SQLite.openDatabaseAsync('GymRite')
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS workouts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        workout_name TEXT NOT NULL,
+        exercise_list TEXT NOT NULL,
+        last_performed DATE 
+      );
+    `);
+    const allRows = await db.getAllAsync('SELECT * FROM workouts');
+    for (const row of allRows) {
+      console.log(row);
+    }
+    setWorkouts(allRows);
   }
   
   useEffect(() => {
     getWorkouts()
-  }, [workouts]);
+  }, []);
 
   useEffect(() => {
     async function onLayoutRootView() {
