@@ -6,4 +6,5 @@
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/bad857c3-e227-457e-ad78-e1fa077ba151" width="200"/>
 
 <h1>Actual React Native screenshots</h1>
+<img src="https://github.com/user-attachments/assets/b3017336-8857-4cbd-937b-7bc1201f7aa6" width="200" />
 
