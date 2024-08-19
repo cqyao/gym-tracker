@@ -1,3 +1,5 @@
+The database framework is migrating to SQLite instead of Supabase to allow for offline-first functionality.
+
 <h1>Figma renders</h1>
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/7e44e1ec-d4a4-4860-8f32-70f1c820a652" width="200"/>
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/832a04ae-eec3-48a7-a052-329b5ba231ad" width="200"/>
