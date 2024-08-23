@@ -1,22 +1,32 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { RFValue } from 'react-native-responsive-fontsize'
 import { Ionicons } from '@expo/vector-icons';
 import { differenceInDays } from 'date-fns';
 import { router } from 'expo-router';
-import { supabase } from '@/utils/supabase';
+import * as SQLite from 'expo-sqlite';
 
-const QuickStart = ({workout}) => {
+const QuickStart = ({workout, onRefresh}) => {
   const currentDate = new Date();
   const [lastPerformed, setLastPerformed] = useState(null);
+  const [showDel, setShowDel] = useState(false);
+
+  // Database
   
   async function updateDate() {
-    const { error } = await supabase
-      .from('Workouts')
-      .update({ last_performed: currentDate })
-      .eq('id', workout.id)
-    if (error) {console.log(error.message)}
+    try {
+      const db = await SQLite.openDatabaseAsync('GymRite');
+      await db.runAsync('UPDATE workouts SET last_performed = ? WHERE workout_name = ?', currentDate.toISOString(), workout.workout_name.toString());
+      await db.runAsync('UPDATE workouts SET has_been_performed = ? WHERE workout_name = ?', 1, workout.workout_name.toString());
+      onRefresh();
+      console.log("Last performed: ", lastPerformed, workout.workout_name.toString());
+    } catch (error) {
+      console.log("Error in updating data: ", error);
+    }
   }
+
+  // Operation 
+
   const startWorkout = () => {
     router.push({
       pathname: "./workout",
@@ -26,23 +36,65 @@ const QuickStart = ({workout}) => {
         exerciseList: workout.exercise_list
       }
     })
+    setLastPerformed(differenceInDays(currentDate, workout.last_performed));
     updateDate();
   };
 
-  useEffect(() => {
-    setLastPerformed(differenceInDays(currentDate, workout.last_performed));
-  },[]);
+  async function delWorkout() {
+    const db = await SQLite.openDatabaseAsync('GymRite');
+    await db.runAsync('DELETE FROM workouts WHERE workout_name = $value', {$value: workout.workout_name})
+    onRefresh();
+  };
+
+  // Toggles
+
+  function toggleDel() {
+    if (showDel === true) {
+      setShowDel(false)
+    } else if (showDel === false) {
+      setShowDel(true)
+    }
+  }
+
+  function ShowDel({ showDel }) {
+    return (
+      <View>
+        {showDel ? (
+          <TouchableOpacity style={styles.delButton} onPress={delWorkout}>
+            <Ionicons name="trash-bin-outline" size={25} color="red" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.startButton} onPress={startWorkout}>
+            <Ionicons name="play-outline" size={25} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  function ToggleHistory({ performed }) {
+    if (performed === 0) {
+      return (
+        <Text>Not performed yet!</Text>
+      )
+    } else {
+      return (
+        <Text style={styles.lastPerformed}>Last performed: {lastPerformed} days ago</Text>
+      )
+    }
+  };
 
   return (
-    <View style={styles.quickStartContainer}>
-      <View>
-        <Text style={styles.exerciseName}>{workout.workout_name}</Text>
-        <Text style={styles.lastPerformed}>Last performed: {lastPerformed} days ago</Text>
+    <Pressable onLongPress={()=>toggleDel()}>
+      <View style={styles.quickStartContainer}>
+        <View>
+          <Text style={styles.exerciseName}>{workout.workout_name}</Text>
+          <ToggleHistory performed={workout.has_been_performed}/>
+        </View>
+        <ShowDel showDel={showDel}/>
+        
       </View>
-      <TouchableOpacity style={styles.startButton} onPress={startWorkout}>
-        <Ionicons name="play-outline" size="25" color="white"/>
-      </TouchableOpacity>
-    </View>
+    </Pressable>
   )
 }
 
@@ -73,6 +125,14 @@ const styles = StyleSheet.create({
     },
     startButton: {
       backgroundColor: "#805281",
+      borderRadius: 5,
+      height: "100%",
+      width: RFValue(30),
+      justifyContent: "center",
+      alignItems: "center"
+    },
+    delButton: {
+      backgroundColor: "#F2F2F2",
       borderRadius: 5,
       height: "100%",
       width: RFValue(30),

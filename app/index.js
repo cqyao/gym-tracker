@@ -1,17 +1,18 @@
-import { View, Text, StyleSheet, Pressable, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, Pressable, TouchableOpacity, ScrollView, Alert } from 'react-native'
 import { Link, SplashScreen } from 'expo-router'
 import { RFValue } from 'react-native-responsive-fontsize'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import QuickStart from '../components/QuickStart'
 import {  useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SQLite from 'expo-sqlite';
-import { supabase } from '@/utils/supabase'
+import { useIsFocused } from '@react-navigation/native';
 
 SplashScreen.preventAutoHideAsync();
 
 const Dashboard = () => {
   const [workouts, setWorkouts] = useState([])
+  const isFocused = useIsFocused();
+
   let [fontsLoaded] = useFonts({
     Inter_700Bold, Inter_500Medium
   });
@@ -24,19 +25,20 @@ const Dashboard = () => {
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         workout_name TEXT NOT NULL,
         exercise_list TEXT NOT NULL,
-        last_performed DATE 
+        last_performed TEXT,
+        has_been_performed INTEGER 
       );
     `);
     const allRows = await db.getAllAsync('SELECT * FROM workouts');
-    for (const row of allRows) {
-      console.log(row);
-    }
     setWorkouts(allRows);
+    for (const row of allRows) {
+      console.log(row)
+    }
   }
   
   useEffect(() => {
     getWorkouts()
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     async function onLayoutRootView() {
@@ -66,15 +68,18 @@ const Dashboard = () => {
       <ScrollView style={{maxHeight: RFValue(180)}}>
         {workouts && workouts.length > 0 && workouts.map((workout)=> {
           return (
-            <QuickStart key={workout.id} workout={workout} />
+            <TouchableOpacity key={workout.id} onLongPress={()=>{Alert.alert('Delete this workout?')}}>
+              <QuickStart workout={workout} onRefresh={getWorkouts}/>
+            </TouchableOpacity>
           )
         })}
       </ScrollView>
-      <Link href="./addworkout" asChild>
-        <Pressable style={styles.addBtn}>
-          <Text style={styles.addBtnText}>Add Workout</Text>
-        </Pressable>
-      </Link>
+        <Link href='./addworkout' asChild>
+          <Pressable style={styles.addBtn}>
+            <Text style={styles.addBtnText}>Add Workout</Text>
+          </Pressable>
+        </Link>
+  
 
     </View>
   )

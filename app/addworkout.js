@@ -6,12 +6,9 @@ import EditExercise from '../components/EditExercise';
 import Modal from "react-native-modal";
 import { AntDesign, Entypo, } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Link, router } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../utils/supabase'
-
-
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -33,25 +30,74 @@ const AddWorkout = () => {
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [customExercise, setCustomExercise] = useState("");
+  const currentDate = new Date();
 
-
+  // Database
 
   async function getExerciseList() {
-    const { data, error } = await supabase
-      .from('Exercises')
-      .select()
-    const exercises = data
-    setExercisesData(exercises)
-    //console.log("Exercises: ", data)
-
-    if (error) {console.log("Error getting exercise data: ", data.message)}
+    try {
+      const db = await SQLite.openDatabaseAsync('GymRite');
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS exercises (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          exercise_name TEXT NOT NULL,
+          type TEXT,
+          current_PR TEXT
+          );
+      `)
+      const exercises = await db.getAllAsync('SELECT * FROM exercises')
+      setExercisesData(exercises);
+    } catch (error) {
+      console.log("Error setting exercise list: ", error);
+    }
   }
 
-  
+  async function saveWorkout() {
+    if (exerciseList.length === 0) {
+      Alert.alert("Exercise list cannot be empty")
+      return null;
+    }
+    if (workoutName === "") {
+      Alert.alert("Workout name cannot be empty")
+      return null;
+    }
+    const db = await SQLite.openDatabaseAsync('GymRite');
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS workouts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        workout_name TEXT NOT NULL,
+        exercise_list TEXT NOT NULL,
+        last_performed TEXT,
+        has_been_performed INTEGER
+        );
+    `)
+    await db.runAsync(
+      'INSERT INTO workouts (workout_name, exercise_list, last_performed, has_been_performed) VALUES (?, ?, ?, ?)',
+      [workoutName, JSON.stringify(exerciseList), currentDate.toISOString(), 0]
+    )
+    router.back();
+  };
+
+  async function saveCustomExercise() {
+    const db = await SQLite.openDatabaseAsync('GymRite');
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS exercises (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        exercise_name TEXT NOT NULL,
+        type TEXT,
+        current_PR TEXT
+        );
+    `)
+    await db.runAsync(
+      'INSERT INTO exercises (exercise_name, type, current_PR) VALUES (?, ?, ?)',
+      [customExercise, value, ""]
+    )
+    getExerciseList();
+  };
+
   useEffect(() => {
     getExerciseList();
   },[]);
-
 
   const handleAddExerciseModal = () => setIsAddExerciseModalVisible(() => !isAddExerciseModalVisible);
   const handleAddCustomModal = () => setIsAddCustomModalVisible(() => !isAddCustomModalVisible);
@@ -93,45 +139,6 @@ const AddWorkout = () => {
     setExerciseList(exerciseList.filter((_, idx) => idx !== index));
   };
 
-  async function saveWorkout() {
-    if (exerciseList.length === 0) {
-      Alert.alert("Exercise list cannot be empty")
-      return null;
-    }
-    if (workoutName === "") {
-      Alert.alert("Workout name cannot be empty")
-      return null;
-    }
-    const db = await SQLite.openDatabaseAsync('GymRite');
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS workouts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        workout_name TEXT NOT NULL,
-        exercise_list TEXT NOT NULL,
-        last_performed DATE 
-        );
-    `)
-    await db.runAsync(
-      'INSERT INTO workouts (workout_name, exercise_list) VALUES (?, ?)',
-      [workoutName, JSON.stringify(exerciseList)]
-    )
-    router.back()
-  };
-
-  async function saveCustomExercise() {
-    const { error } = await supabase
-      .from('Exercises')
-      .insert({
-        exercise_name: customExercise,
-        type: value
-      })
-    if (error) {console.log(error.message)}
-    getExerciseList();
-  }
-  function goBack() {
-    router.back()
-  }
-
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -141,10 +148,9 @@ const AddWorkout = () => {
           value={workoutName}
           onChangeText={setWorkoutName}
         />
-        <Pressable onPress={goBack}>
+        <Pressable onPress={()=>router.back()}>
           <Entypo name={"squared-cross"} size={30} color={"#805281"} />
         </Pressable>
-        
       </View>
       <ScrollView style={styles.exerciseView}>
         {exerciseList.map((exercise, index) => (
