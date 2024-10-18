@@ -6,7 +6,8 @@ import StopwatchTimer, {
 import Exercise from '../components/Exercise';
 import { Entypo, } from '@expo/vector-icons'
 import { useLocalSearchParams, router, Link } from 'expo-router';
-import { supabase } from '../utils/supabase'
+import { RFValue } from 'react-native-responsive-fontsize'
+import * as SQLite from 'expo-sqlite'
 
 
 const workout = () => {
@@ -14,6 +15,7 @@ const workout = () => {
   const { workoutName, exerciseList, workoutId } = useLocalSearchParams();
   const [exerciseData, setExerciseData] = useState([]);
   const exercise_list = JSON.parse(exerciseList);
+  const currentDate = new Date();
 
   const onScreenLoad = () => {
     stopwatchTimerRef.current?.play();
@@ -36,14 +38,22 @@ const workout = () => {
   };
 
   async function finishWorkout() {
+    try {
+      const db = await SQLite.openDatabaseAsync('GymRite')
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS workout_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          workout_name TEXT NOT NULL,
+          date TEXT NOT NULL,
+          exercise_details TEXT 
+        )
+      `)
+      await db.runAsync(
+        'INSERT INTO workout_history (workout_name, date, exercise_details) VALUES (?,?,?)',
+        [workoutName, currentDate.toISOString(), JSON.stringify(exerciseData)]
+      )
+    } catch (error) { console.log("Error creating workout history table: ", error)}
     router.back();
-    const { error } = await supabase
-      .from('Workout History')
-      .insert({
-        workout_id: workoutId,
-        exercise_details: exerciseData
-      })
-    if ( error ) {console.log(error.message)}
   };
 
   return (
@@ -68,8 +78,8 @@ const workout = () => {
           />
         ))}
       </ScrollView>
-      <TouchableOpacity onPress={finishWorkout}>
-        <Text>Finish workout</Text>
+      <TouchableOpacity onPress={finishWorkout} style={styles.finishBtn}>
+        <Text style={styles.finishText}>Finish workout</Text>
       </TouchableOpacity>
     </View>
   );
@@ -89,6 +99,21 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     height: 30,
+  },
+  finishBtn: {
+    backgroundColor: "black",
+    width: "60%",
+    borderRadius: 10,
+    height: RFValue(25),
+    justifyContent: "center",
+    alignItems: "center",
+    margin: RFValue(10),
+    alignSelf: "center",
+  },
+  finishText: {
+    color: "white",
+    fontSize: 15,
+    fontWeight: "bold",
   }
 })
 

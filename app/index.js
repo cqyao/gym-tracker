@@ -6,6 +6,7 @@ import QuickStart from '../components/QuickStart'
 import {  useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -68,7 +69,7 @@ const Dashboard = () => {
       <ScrollView style={{maxHeight: RFValue(180)}}>
         {workouts && workouts.length > 0 && workouts.map((workout)=> {
           return (
-            <TouchableOpacity key={workout.id} onLongPress={()=>{Alert.alert('Delete this workout?')}}>
+            <TouchableOpacity key={workout.id}>
               <QuickStart workout={workout} onRefresh={getWorkouts}/>
             </TouchableOpacity>
           )
@@ -79,8 +80,6 @@ const Dashboard = () => {
             <Text style={styles.addBtnText}>Add Workout</Text>
           </Pressable>
         </Link>
-  
-
     </View>
   )
 }
