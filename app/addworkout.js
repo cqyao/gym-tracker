@@ -6,9 +6,10 @@ import EditExercise from '../components/EditExercise';
 import Modal from "react-native-modal";
 import { AntDesign, Entypo, } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { router, } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AnimatedFAB } from 'react-native-paper';
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -31,6 +32,7 @@ const AddWorkout = () => {
   const [isFocus, setIsFocus] = useState(false);
   const [customExercise, setCustomExercise] = useState("");
   const currentDate = new Date();
+  const [isExtended, setIsExtended] = useState(true);
 
   // Database
 
@@ -42,7 +44,8 @@ const AddWorkout = () => {
           id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
           exercise_name TEXT NOT NULL,
           type TEXT,
-          current_PR TEXT
+          current_PR TEXT,
+          max INTEGER
           );
       `)
       const exercises = await db.getAllAsync('SELECT * FROM exercises')
@@ -73,7 +76,7 @@ const AddWorkout = () => {
     `)
     await db.runAsync(
       'INSERT INTO workouts (workout_name, exercise_list, last_performed, has_been_performed) VALUES (?, ?, ?, ?)',
-      [workoutName, JSON.stringify(exerciseList), currentDate.toISOString(), 0]
+      [workoutName, JSON.stringify(exerciseList), currentDate.toDateString(), 0]
     )
     router.back();
   };
@@ -84,13 +87,12 @@ const AddWorkout = () => {
       CREATE TABLE IF NOT EXISTS exercises (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         exercise_name TEXT NOT NULL,
-        type TEXT,
-        current_PR TEXT
+        type TEXT
         );
     `)
     await db.runAsync(
-      'INSERT INTO exercises (exercise_name, type, current_PR) VALUES (?, ?, ?)',
-      [customExercise, value, ""]
+      'INSERT INTO exercises (exercise_name, type) VALUES (?, ?)',
+      [customExercise, value]
     )
     getExerciseList();
   };
@@ -230,9 +232,18 @@ const AddWorkout = () => {
             </View>
           </View>
         </Modal>
-        <TouchableOpacity style={styles.saveBtn} onPress={saveWorkout}>
+        {/* <TouchableOpacity style={styles.saveBtn} onPress={saveWorkout}>
           <Text style={{color: "white", fontSize: "20", fontFamily: "Inter_700Bold"}}>Save</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <AnimatedFAB 
+          icon={'plus'}
+          label={'Label'}
+          extended={isExtended}
+          visible={true}
+          animateFrom={'right'}
+          iconMode={'static'}
+
+        />
       </View>
       
     </View>

@@ -50,9 +50,23 @@ const workout = () => {
       `)
       await db.runAsync(
         'INSERT INTO workout_history (workout_name, date, exercise_details) VALUES (?,?,?)',
-        [workoutName, currentDate.toISOString(), JSON.stringify(exerciseData)]
+        [workoutName, currentDate.toDateString(), JSON.stringify(exerciseData)]
       )
     } catch (error) { console.log("Error creating workout history table: ", error)}
+    for (const exercise of exerciseData) {
+      try {
+        const db = await SQLite.openDatabaseAsync('GymRite');
+        await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS exercise_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            name TEXT,
+            max INTEGER,
+            date TEXT
+          )
+        `)
+        await db.runAsync('INSERT INTO exercise_history (name, max, date) VALUES (?, ?, ?)', [exercise.name, exercise.max, currentDate.toDateString()])
+      } catch (error) { console.log("Error saving exercise history")}
+    }
     router.back();
   };
 

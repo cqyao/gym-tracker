@@ -5,18 +5,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { differenceInDays } from 'date-fns';
 import { router } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
+import { useIsFocused } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
+import { Button } from 'react-native-paper';
 
 const QuickStart = ({workout, onRefresh}) => {
   const currentDate = new Date();
   const [lastPerformed, setLastPerformed] = useState(null);
   const [showDel, setShowDel] = useState(false);
+  const isFocused = useIsFocused();
 
   // Database
   
   async function updateDate() {
     try {
       const db = await SQLite.openDatabaseAsync('GymRite');
-      await db.runAsync('UPDATE workouts SET last_performed = ? WHERE workout_name = ?', currentDate.toISOString(), workout.workout_name.toString());
+      await db.runAsync('UPDATE workouts SET last_performed = ? WHERE workout_name = ?', currentDate.toDateString(), workout.workout_name.toString());
       await db.runAsync('UPDATE workouts SET has_been_performed = ? WHERE workout_name = ?', 1, workout.workout_name.toString());
       onRefresh();
       console.log("Last performed: ", lastPerformed, workout.workout_name.toString());
@@ -25,19 +29,24 @@ const QuickStart = ({workout, onRefresh}) => {
     }
   }
 
+  // UseEffect
+
+  useEffect(() => {
+    setLastPerformed(differenceInDays(currentDate, workout.last_performed));
+  }, [isFocused])
+
   // Operation 
 
   const startWorkout = () => {
+    updateDate();
     router.push({
       pathname: "./workout",
       params: {
         workoutName: workout.workout_name, 
         workoutId: workout.id,
-        exerciseList: workout.exercise_list
+        exerciseList: workout.exercise_list,
       }
     })
-    setLastPerformed(differenceInDays(currentDate, workout.last_performed));
-    updateDate();
   };
 
   async function delWorkout() {
@@ -57,31 +66,39 @@ const QuickStart = ({workout, onRefresh}) => {
   }
 
   function ShowDel({ showDel }) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     return (
       <View>
         {showDel ? (
-          <TouchableOpacity style={styles.delButton} onPress={delWorkout}>
-            <Ionicons name="trash-bin-outline" size={25} color="red" />
-          </TouchableOpacity>
+          <Button 
+            style={styles.delButton} 
+            onPress={delWorkout}
+            mode="text"
+          >
+            <Ionicons name="trash-bin-outline" size={20} color="red" />
+          </Button>
         ) : (
-          <TouchableOpacity style={styles.startButton} onPress={startWorkout}>
-            <Ionicons name="play-outline" size={25} color="white" />
-          </TouchableOpacity>
+          <Button
+            style={styles.startButton}
+            mode="text"
+            onPress={startWorkout}
+          >
+            <Ionicons name="play-outline" color="white" size={20} />
+          </Button>
         )}
       </View>
     );
   }
 
   function ToggleHistory({ performed }) {
-    if (performed === 0) {
+    if (performed == 0) {
       return (
         <Text>Not performed yet!</Text>
       )
-    } else {
-      return (
-        <Text style={styles.lastPerformed}>Last performed: {lastPerformed} days ago</Text>
-      )
     }
+    return (
+      <Text style={styles.lastPerformed}>Last performed: {lastPerformed} days ago</Text>
+    )
   };
 
   return (
@@ -125,19 +142,19 @@ const styles = StyleSheet.create({
     },
     startButton: {
       backgroundColor: "#805281",
-      borderRadius: 5,
+      borderRadius: 10,
       height: "100%",
-      width: RFValue(30),
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      marginLeft: "auto"
     },
     delButton: {
       backgroundColor: "#F2F2F2",
-      borderRadius: 5,
+      borderRadius: 10,
       height: "100%",
-      width: RFValue(30),
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      marginLeft: "auto"
     }
 })
 

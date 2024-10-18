@@ -3,12 +3,23 @@ import React, { useState, useEffect } from 'react'
 import { RFValue } from "react-native-responsive-fontsize";
 
 const Exercise = ({ index, name, pr, onExerciseUpdate }) => {
-  const [sets, setSets] = useState(["", "", ""]);
-  const [weights, setWeights] = useState(["", "", ""]);
-  const [reps, setReps] = useState(["", "", ""]);
+  const [sets, setSets] = useState(['', '', '']);
+  const [weights, setWeights] = useState([0, 0, 0]);
+  const [reps, setReps] = useState([0, 0, 0]);
+  const [max, setMax] = useState(0);
+
+  function handleMaxChange(newWeights, newReps) {
+    let newMax = 0;
+    for (let i = 0; i <= newReps.length; i++) {
+      if (newWeights[i] * newReps[i] > newMax) {
+        newMax = newWeights[i] * newReps[i]
+      }
+    }
+    setMax(newMax);
+  }
 
   useEffect(() => {
-    const exerciseData = { index, name, sets, weights, reps };
+    const exerciseData = { index, name, sets, weights, reps, max };
     onExerciseUpdate(exerciseData);
   }, [sets, weights, reps]);
 
@@ -20,14 +31,16 @@ const Exercise = ({ index, name, pr, onExerciseUpdate }) => {
 
   const handleWeightChange = (text, idx) => {
     const newWeights = [...weights];
-    newWeights[idx] = text;
+    newWeights[idx] = parseInt(text);
     setWeights(newWeights);
+    handleMaxChange(newWeights, reps);
   };
 
   const handleRepChange = (text, idx) => {
     const newReps = [...reps];
-    newReps[idx] = text;
+    newReps[idx] = parseInt(text);
     setReps(newReps);
+    handleMaxChange(weights, newReps);
   };
 
   return (
@@ -92,14 +105,16 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: "white",
         height: RFValue(110),
-        width: "98%",
+        width: "100%",
         padding: RFValue(8),
         shadowColor: 'grey',
         shadowOffset: { width: 2, height: 5 },
         shadowOpacity: 0.2,
         shadowRadius: 1,  
         // For Android phones
-        elevation: 5
+        elevation: 5,
+        alignItems: "center",
+        justifyContent: "space-between"
     },
     outer: {
         marginTop: 10,
@@ -136,7 +151,7 @@ const styles = StyleSheet.create({
       alignSelf: "center",
     },
     setInput: {
-      width: RFValue(25),
+      width: RFValue(30),
       height: RFValue(25),
       backgroundColor: "#ECECEC",
       marginTop: 3,
@@ -147,7 +162,7 @@ const styles = StyleSheet.create({
       color: "orange",
     },
     weightInput: {
-      width: RFValue(55),
+      width: RFValue(65),
       height: RFValue(25),
       backgroundColor: "#ECECEC",
       marginTop: 3,
@@ -156,7 +171,7 @@ const styles = StyleSheet.create({
       textAlign: "center",
     },
     repInput: {
-      width: RFValue(35),
+      width: RFValue(40),
       height: RFValue(25),
       backgroundColor: "#ECECEC",
       marginTop: 3,
@@ -167,7 +182,7 @@ const styles = StyleSheet.create({
     prInput: {
       fontFamily: "Inter_500Medium",
       fontSize: RFValue(13),
-      width: RFValue(80),
+      width: RFValue(90),
       height: RFValue(25),
       backgroundColor: "#ECECEC",
       marginTop: 3,
@@ -178,7 +193,6 @@ const styles = StyleSheet.create({
     }, 
     setColumn: {
       flexDirection: "column",
-      marginRight: 20,
     }
 
 });

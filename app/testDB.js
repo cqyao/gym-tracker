@@ -1,24 +1,46 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useEffect } from 'react'
-import * as SQLite from 'expo-sqlite';
+import { View } from "react-native"
+import { Bar, CartesianChart } from "victory-native"
+import { LinearGradient, useFont, vec } from "@shopify/react-native-skia"
+import { Inter_500Medium } from "@expo-google-fonts/inter"
 
 const testDB = () => {
-
-  async function databaseStuff() {
-    const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY NOT NULL, value TEXT);
-      INSERT INTO test (value) VALUES ('test1');
-    `);
-    const result = await db.getFirstAsync('SELECT * FROM test');
-    console.log(result);
-  }
-  
+  const font = useFont(Inter_500Medium, 12)
+  const data = Array.from({ length: 6 }, (_, index) => ({
+    month: index + 1,
+    listenCount: Math.floor(Math.random() * (100 - 50 + 1)) + 50,
+  }))
 
   return (
-    <View>
-      <TouchableOpacity onPress={databaseStuff}><Text>Press</Text></TouchableOpacity>
-    </View>
+    <CartesianChart
+      data={data}
+      xKey="month"
+      yKeys={["listenCount"]}
+      domainPadding={{ left: 50, right: 50, top: 30 }}
+      axisOptions={{
+        font,
+        formatXLabel(value) {
+          const date = new Date(2023, value - 1)
+          return date.toLocaleString("default", { month: "short" })
+        },
+      }}
+    >
+      {({ points, chartBounds }) => (
+        <Bar
+          chartBounds={chartBounds}
+          points={points.listenCount}
+          roundedCorners={{
+            topLeft: 5,
+            topRight: 5,
+          }}
+        >
+          <LinearGradient
+            start={vec(0, 0)}
+            end={vec(0, 400)}
+            colors={["#a78bfa", "#a78bfa50"]}
+          />
+        </Bar>
+      )}
+    </CartesianChart>
   )
 }
 
