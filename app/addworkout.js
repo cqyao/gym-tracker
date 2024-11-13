@@ -232,18 +232,10 @@ const AddWorkout = () => {
             </View>
           </View>
         </Modal>
-        {/* <TouchableOpacity style={styles.saveBtn} onPress={saveWorkout}>
+        <TouchableOpacity style={styles.saveBtn} onPress={saveWorkout}>
           <Text style={{color: "white", fontSize: "20", fontFamily: "Inter_700Bold"}}>Save</Text>
-        </TouchableOpacity> */}
-        <AnimatedFAB 
-          icon={'plus'}
-          label={'Label'}
-          extended={isExtended}
-          visible={true}
-          animateFrom={'right'}
-          iconMode={'static'}
-
-        />
+        </TouchableOpacity>
+        
       </View>
       
     </View>

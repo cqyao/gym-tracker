@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
 import { RFValue } from 'react-native-responsive-fontsize'
@@ -60,7 +60,9 @@ const exercises = () => {
           </Pressable>
         </View>
         <Modal isVisible={isAddCustomModalVisible}>
-          
+          <TouchableOpacity style={styles.cancelBtn} onPress={handleAddExerciseModal}>
+            <Text style={styles.cancelBtnText}>Cancel</Text>
+          </TouchableOpacity>
         </Modal>
         
         {exercises.map((exercise) => {
@@ -104,5 +106,16 @@ const styles = StyleSheet.create({
   h2: {
     fontSize: RFValue(10),
     fontFamily: "Inter_500Medium",
-  }
+  },
+  cancelBtn: {
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  cancelBtnText: {
+    color: "black",
+    fontSize: RFValue(13),
+    fontFamily: "Inter_500Medium",
+  },
 })

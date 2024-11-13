@@ -15,7 +15,7 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* <Tabs.Screen
+      <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
@@ -23,7 +23,7 @@ export default function TabLayout() {
             <Entypo name='home' size={28}/>
           )
         }}
-      /> */}
+      />
       <Tabs.Screen
         name="exercises"
         options={{
