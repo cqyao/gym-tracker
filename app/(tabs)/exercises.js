@@ -5,7 +5,7 @@ import { RFValue } from 'react-native-responsive-fontsize'
 import { FontAwesome5, AntDesign } from '@expo/vector-icons';
 import Modal from "react-native-modal";
 import { Dropdown } from 'react-native-element-dropdown';
-import { Button, TextInput, Text, Divider } from 'react-native-paper';
+import { Button, TextInput, Text, Snackbar } from 'react-native-paper';
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -31,26 +31,22 @@ const exercises = () => {
 
   async function getExercises() {
     const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS exercises (
-          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          exercise_name TEXT NOT NULL,
-          type TEXT
-          );
-    `)
     const allRows = await db.getAllAsync('SELECT * FROM exercises');
     setExercises(allRows);
   }
 
   async function delExercises(name) {
     const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.runAsync('DELETE FROM exercises WHERE exercise_name = $value', {$value: name})
+    await db.runAsync('DELETE FROM exercises WHERE exercise_name = $value', { $value: name })
   }
 
   async function addExercise() {
     const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.runAsync('INSERT INTO exercises (exercise_name, type) VALUES (?, ?)'), 
-    []
+    console.log(exerciseName, " ", value);
+    await db.runAsync('INSERT INTO exercises (exercise_name, type) VALUES (?, ?)',
+      [exerciseName, value]
+    )
+    handleAddExerciseModal();
   }
 
   async function handleModal(name) {
@@ -65,66 +61,66 @@ const exercises = () => {
 
 
   return (
-      <View style={styles.container}>
-        <Text style={styles.welcomeHeader}>Exercises</Text>
-        <View style={styles.buttonContainer}>
-          <Button style={styles.addBtn} icon="plus" onPress={handleAddExerciseModal}>
-            <Text variant='labelLarge'>Add</Text>
-          </Button>
-          {exercises.map((exercise) => {
+    <View style={styles.container}>
+      <Text style={styles.welcomeHeader}>Exercises</Text>
+      <View style={styles.buttonContainer}>
+        <Button style={styles.addBtn} icon="plus" onPress={handleAddExerciseModal}>
+          <Text variant='labelLarge'>Add</Text>
+        </Button>
+        {exercises.map((exercise) => {
           return (
             <View key={exercise.id} style={styles.exerciseContainer}>
-              <Pressable onPress={()=>handleModal(exercise.exercise_name)}>
-                <Text style={{ color: "#6750A4"}}>{exercise.exercise_name}</Text>
+              <Pressable onPress={() => handleModal(exercise.exercise_name)}>
+                <Text style={{ color: "#6750A4" }}>{exercise.exercise_name}</Text>
                 <Text variant='bodySmall' style={{ color: "grey" }}>({exercise.type})</Text>
               </Pressable>
             </View>
           )
         })}
-        </View>
-        <Modal isVisible={isExerciseModal} >
-          <View style={styles.exerciseModal}>
-            <View style={{ flex: 1, marginTop: 5, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Pressable onPress={handleExerciseModal}>
-                <AntDesign name="closesquare" size="25"/>
-              </Pressable>
-              <Text variant='titleMedium'>{exerciseModalName}</Text>
-              {/* Still working on how to manage exercise deletion. Should it just be hidden? How does it affect workouts? */}
-              <Pressable onPress={() => { delExercises(exerciseModalName); handleExerciseModal() }}>
-                <Text variant="labelLarge" style={{ color: "#6750A4" }}>Delete</Text>
-              </Pressable>
-            </View>
-            <View style={{ flex: 8, backgroundColor: "blue" }}>
-
-            </View>
-            
+      </View>
+      <Modal isVisible={isExerciseModal} >
+        <View style={styles.exerciseModal}>
+          <View style={{ flex: 1, marginTop: 5, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Pressable onPress={handleExerciseModal}>
+              <AntDesign name="closesquare" size="25" />
+            </Pressable>
+            <Text variant='titleMedium'>{exerciseModalName}</Text>
+            {/* Still working on how to manage exercise deletion. Should it just be hidden? How does it affect workouts? */}
+            <Pressable onPress={() => { {/*delExercises(exerciseModalName); handleExerciseModal() */ } }}>
+              <Text variant="labelLarge" style={{ color: "#6750A4" }}>Delete</Text>
+            </Pressable>
           </View>
-        </Modal>
-        
-        {/* Add exercise modal */}
-        <Modal isVisible={isAddCustomModalVisible} >
-          <View style={styles.addModal}>
-            <View style={{ flex: 1, marginTop: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Pressable onPress={handleAddExerciseModal}>
-                <AntDesign name="closesquare" size="25" />
-              </Pressable>
-              <Text variant='titleMedium'>
-                Add exercise
-              </Text>
-              <Pressable onPress={()=> addExercise()}>
-                <Text variant="labelLarge" style={{ color: "#6750A4" }}>Save</Text>
-              </Pressable>
-            </View>
-            <View style={{ flex: 2 }}>
-              <TextInput 
-                style={styles.exerciseInput}
-                mode='outlined'
-                label="Exercise name"
-                value={exerciseName}
-                onChangeText={text => setExerciseName(text)}
-                dense={true}
-              />
-              <View style={{flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+          <View style={{ flex: 8, backgroundColor: "blue" }}>
+
+          </View>
+
+        </View>
+      </Modal>
+
+      {/* Add exercise modal */}
+      <Modal isVisible={isAddCustomModalVisible} >
+        <View style={styles.addModal}>
+          <View style={{ flex: 1, marginTop: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Pressable onPress={handleAddExerciseModal}>
+              <AntDesign name="closesquare" size="25" />
+            </Pressable>
+            <Text variant='titleMedium'>
+              Add exercise
+            </Text>
+            <Pressable onPress={() => addExercise()}>
+              <Text variant="labelLarge" style={{ color: "#6750A4" }}>Save</Text>
+            </Pressable>
+          </View>
+          <View style={{ flex: 2 }}>
+            <TextInput
+              style={styles.exerciseInput}
+              mode='outlined'
+              label="Exercise name"
+              value={exerciseName}
+              onChangeText={exerciseName => setExerciseName(exerciseName)}
+              dense={true}
+            />
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
               <Text style={styles.category}>Category</Text>
               <Dropdown
                 style={styles.dropdown}
@@ -139,10 +135,10 @@ const exercises = () => {
                 }}
               />
             </View>
-            </View>
           </View>
-          
-        </Modal>
+        </View>
+      </Modal>
+      {/* End exercise modal */}
     </View>
   )
 }
@@ -239,5 +235,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 30,
   }
-  
+
 })

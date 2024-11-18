@@ -7,13 +7,16 @@ import { router } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { Button } from 'react-native-paper';
+import { Button, Snackbar, Portal } from 'react-native-paper';
 
 const QuickStart = ({workout, onRefresh}) => {
   const currentDate = new Date();
   const [lastPerformed, setLastPerformed] = useState(null);
   const [showDel, setShowDel] = useState(false);
   const isFocused = useIsFocused();
+  // For Snackbar when deleting workout.
+  const [visible, setVisible] = useState(false);
+  const onToggleSnackBar = () => setVisible(!visible);
 
   // Database
   
@@ -50,9 +53,12 @@ const QuickStart = ({workout, onRefresh}) => {
   };
 
   async function delWorkout() {
+    
     const db = await SQLite.openDatabaseAsync('GymRite');
     await db.runAsync('DELETE FROM workouts WHERE workout_name = $value', {$value: workout.workout_name})
     onRefresh();
+    onToggleSnackBar();
+    
   };
 
   // Toggles
@@ -109,9 +115,22 @@ const QuickStart = ({workout, onRefresh}) => {
           <ToggleHistory performed={workout.has_been_performed}/>
         </View>
         <ShowDel showDel={showDel}/>
-        
+        <Portal>
+          <Snackbar
+            visible={visible}
+            action={{
+              label: 'Undo',
+              onPress: () => {
+                console.log("This doesn't do anything.")
+              },
+            }}>
+              Workout deleted!
+          </Snackbar>
+        </Portal>
       </View>
+      
     </Pressable>
+    
   )
 }
 

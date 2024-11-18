@@ -11,8 +11,8 @@ const Exercise = ({ index, name, pr, onExerciseUpdate }) => {
   function handleMaxChange(newWeights, newReps) {
     let newMax = 0;
     for (let i = 0; i <= newReps.length; i++) {
-      if (newWeights[i] * newReps[i] > newMax) {
-        newMax = newWeights[i] * newReps[i]
+      if (newWeights[i] * (1+newReps[i]/30) > newMax) {
+        newMax = newWeights[i] * (1+newReps[i]/30)
       }
     }
     setMax(newMax);

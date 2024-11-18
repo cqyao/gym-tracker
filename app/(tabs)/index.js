@@ -3,13 +3,13 @@ import { Link, SplashScreen } from 'expo-router'
 import { RFValue } from 'react-native-responsive-fontsize'
 import React, { useEffect, useState } from 'react'
 import QuickStart from '../../components/QuickStart'
-import {  useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
+import { useFonts, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter'
 import * as SQLite from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
 import { CartesianChart, Line } from "victory-native";
 import { Dropdown } from 'react-native-element-dropdown';
 import { useFont } from '@shopify/react-native-skia';
-import { Button } from 'react-native-paper'
+import { Button, Snackbar } from 'react-native-paper'
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,18 +27,68 @@ const Dashboard = () => {
     Inter_700Bold, Inter_500Medium
   });
 
-  const DATA = max.length > 0 && date.length > 0 ? 
-  Array.from({ length: max.length }, (_, i) => ({
-    max: max[i], // Fallback to 0 if max[i] is undefined
-    date: date[i] // Fallback to an empty string if date[i] is undefined
-  })) 
-  : [];
+  const DATA = max.length > 0 && date.length > 0 ?
+    Array.from({ length: max.length }, (_, i) => ({
+      max: max[i], // Fallback to 0 if max[i] is undefined
+      date: date[i] // Fallback to an empty string if date[i] is undefined
+    }))
+    : [];
+
+  async function prepareDB() {
+    try {
+      const db = await SQLite.openDatabaseAsync('GymRite')
+      // Prepare the workout history db
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS workout_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          workout_name TEXT NOT NULL,
+          date TEXT NOT NULL,
+          exercise_details TEXT 
+        )
+      `)
+      // Prepare the exercise history db
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS exercise_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          name TEXT,
+          max INTEGER,
+          date TEXT
+        )
+      `)
+      // Prepare the exercises db
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS exercises (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          exercise_name TEXT NOT NULL,
+          type TEXT,
+          current_PR TEXT,
+          max INTEGER
+          );
+      `)
+      // Prepare the workouts db
+      await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS workouts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          workout_name TEXT NOT NULL,
+          exercise_list TEXT NOT NULL,
+          last_performed TEXT,
+          has_been_performed INTEGER
+          );
+      `)
+    } catch(error) {
+      console.log("Error preparing database!")
+    }
+  }
+
+  useEffect(() => {
+    prepareDB();
+  }, [])
 
   async function getMax(name) {
     try {
       const db = await SQLite.openDatabaseAsync('GymRite');
       const allRows = await db.getAllAsync('SELECT max, date FROM exercise_history WHERE name = ?', [name]);
-      
+
       if (allRows && allRows.length > 0) {
         const maxValues = allRows.map(row => row.max);
         const maxDates = allRows.map(row => row.date);
@@ -52,17 +102,9 @@ const Dashboard = () => {
       console.error("Error fetching data: ", error);
     }
   }
-  
+
   async function getExercises() {
     const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS exercises (
-          id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-          exercise_name TEXT NOT NULL,
-          type TEXT,
-          current_PR TEXT
-          );
-    `)
     const allRows = await db.getAllAsync('SELECT * FROM exercises');
     setExercises(allRows);
     const names = allRows.map((row) => ({ label: row.exercise_name, value: row.exercise_name }));
@@ -72,25 +114,19 @@ const Dashboard = () => {
 
   async function getWorkouts() {
     const db = await SQLite.openDatabaseAsync('GymRite')
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS workouts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        workout_name TEXT NOT NULL,
-        exercise_list TEXT NOT NULL,
-        last_performed TEXT,
-        has_been_performed INTEGER 
-      );
-    `);
     const allRows = await db.getAllAsync('SELECT * FROM workouts');
     setWorkouts(allRows);
     // for (const row of allRows) {
     //   console.log(row)
     // }
   }
-  
+
   useEffect(() => {
-    getWorkouts();
-    getExercises();
+    try {
+      getWorkouts();
+      getExercises();
+    } catch (error) { console.log("Error getting workouts or exercises (possibly no database available yet)")}
+    
     //console.log(exercises[0].exercise_name)
   }, [isFocused]);
 
@@ -113,10 +149,10 @@ const Dashboard = () => {
     <View style={styles.container}>
       <Text style={styles.welcomeHeader}>Welcome, User</Text>
       {/* Progress Section*/}
-      <Text style={styles.sectionHeader}>Progress</Text>
+      <Text style={styles.sectionHeader}>Progress (1RM)</Text>
       <View style={styles.progressContainer}>
-        <Dropdown 
-          style={styles.dropdown} 
+        <Dropdown
+          style={styles.dropdown}
           placeholder='Select Exercise'
           placeholderStyle={styles.dropdownText}
           data={exerciseNames}
@@ -128,48 +164,48 @@ const Dashboard = () => {
           }}
         />
         {DATA.length > 0 ? (
-        <CartesianChart 
-          data={DATA} 
-          xKey="date" 
-          yKeys={["max"]}
-          domainPadding={{ left: 20, right: 20, top: 10 }}
-          domain={{y: [0]}}
-          axisOptions={{ 
-            font,
-            formatXLabel(value) {
-              const date = new Date(value)
-              return isNaN(date.getTime()) ? "" : date.toLocaleString("default", { month: "short", day: "numeric" });
-            },
-          }}
-        >
-          {({ points, chartBounds }) => (
-            <Line chartBounds={chartBounds} points={points.max} color="#818AAE" strokeWidth={2} strokeJoin="round" strokeCap="square"/>
-          )}
-        </CartesianChart>
-      ) : (
-        <Text style={styles.noDataText}>No data available</Text>
-      )}
+          <CartesianChart
+            data={DATA}
+            xKey="date"
+            yKeys={["max"]}
+            domainPadding={{ left: 20, right: 20, top: 10 }}
+            domain={{ y: [0] }}
+            axisOptions={{
+              font,
+              formatXLabel(value) {
+                const date = new Date(value)
+                return isNaN(date.getTime()) ? "" : date.toLocaleString("default", { month: "short", day: "numeric" });
+              },
+            }}
+          >
+            {({ points, chartBounds }) => (
+              <Line chartBounds={chartBounds} points={points.max} color="#818AAE" strokeWidth={2} strokeJoin="round" strokeCap="square" />
+            )}
+          </CartesianChart>
+        ) : (
+          <Text style={styles.noDataText}>No data available</Text>
+        )}
       </View>
 
       {/* Quick start workouts section */}
       <Text style={styles.sectionHeader}>Workouts</Text>
-      <ScrollView style={{maxHeight: RFValue(120)}}>
-        {workouts && workouts.length > 0 && workouts.map((workout)=> {
+      <ScrollView style={{ maxHeight: RFValue(120) }}>
+        {workouts && workouts.length > 0 && workouts.map((workout) => {
           return (
             <TouchableOpacity key={workout.id}>
-              <QuickStart workout={workout} onRefresh={getWorkouts}/>
+              <QuickStart workout={workout} onRefresh={getWorkouts} />
             </TouchableOpacity>
           )
         })}
       </ScrollView>
-        <Link href='./addworkout' asChild>
-          <Button
-            mode="contained"
-            style={styles.addBtn}
-          >
-            Add Workout
-          </Button>
-        </Link>
+      <Link href='./addworkout' asChild>
+        <Button
+          mode="contained"
+          style={styles.addBtn}
+        >
+          Add Workout
+        </Button>
+      </Link>
     </View>
   )
 }
@@ -200,7 +236,7 @@ const styles = StyleSheet.create({
     shadowColor: 'grey',
     shadowOffset: { width: 2, height: 5 },
     shadowOpacity: 0.2,
-    shadowRadius: 1,  
+    shadowRadius: 1,
     // For Android phones
     elevation: 5
   },
@@ -235,7 +271,7 @@ const styles = StyleSheet.create({
     fontSize: RFValue(15),
     color: "grey",
   }
-  
+
 })
 
 
