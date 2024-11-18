@@ -221,12 +221,12 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     padding: 5,
-    width: "50%",
+    width: "80%",
     borderBottomColor: 'gray',
   },
   dropdownText: {
     fontFamily: "Inter_500Medium",
-    fontSize: RFValue(10),
+    fontSize: RFValue(9),
     color: "black"
   },
   noDataText: {

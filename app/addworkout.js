@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Pressable } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Pressable } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import CheckBox from 'expo-checkbox';
 import { RFValue } from "react-native-responsive-fontsize";
@@ -10,6 +10,7 @@ import { router, } from 'expo-router';
 import * as SQLite from 'expo-sqlite';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AnimatedFAB } from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 
 const exercisesCategory = [
   { label: 'Barbell', value: '1' },
@@ -211,7 +212,7 @@ const AddWorkout = () => {
             <TextInput
               style={styles.exerciseName}
               placeholder='Exercise name'
-              onChangeText={setCustomExercise}
+              onChangeText={customExercise => setCustomExercise(customExercise)}
               value={customExercise}
               autoCapitalize='words'
             />
