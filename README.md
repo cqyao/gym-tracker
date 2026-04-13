@@ -1,3 +1,6 @@
+This mobile app is still unfinished but I hope to continue working on it and finish it in the future. 
+I started this project while I was regularly going to the gym and, after stopping, my interest in the app has declined. When I return to my regular workouts, my interest might also return. 
+
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/7e44e1ec-d4a4-4860-8f32-70f1c820a652" width="200"/>
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/832a04ae-eec3-48a7-a052-329b5ba231ad" width="200"/>
 <img src="https://github.com/cqyao/gym-tracker/assets/116619110/c2ed6144-f2f4-4cad-b097-5accd528d86c" width="200"/>
